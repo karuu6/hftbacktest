@@ -144,6 +144,28 @@ void Book::delete_order(uint64_t id) {
     delete order;
 }
 
+double Book::cost_buy(uint32_t size) const {
+    double cost = 0;
+    const auto it = asks.begin();
+    while (size > 0 && it != asks.end()) {
+        uint32_t qty = std::min(size, it->second->size);
+        cost += qty * it->first;
+        size -= qty;
+    }
+    return cost;
+}
+
+double Book::cost_sell(uint32_t size) const {
+    double cost = 0;
+    const auto it = bids.begin();
+    while (size > 0 && it != asks.end()) {
+        uint32_t qty = std::min(size, it->second->size);
+        cost += qty * it->first;
+        size -= qty;
+    }
+    return cost;
+}
+
 Book::~Book() {
     clear();
 }

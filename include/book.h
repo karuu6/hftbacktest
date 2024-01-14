@@ -13,6 +13,9 @@ public:
     void cancel(const Event& event);
     void clear();
 
+    double cost_buy(uint32_t size) const;
+    double cost_sell(uint32_t size) const;
+
     void print_book() const;
 
     ~Book();
