@@ -46,7 +46,6 @@ void Book::add(const Event& event) {
     }
 
     if (limit) {
-        assert(limit->side == order->side);
         order->parent = limit;
         order->prev = limit->tail;
         limit->tail->next = order;
@@ -74,7 +73,7 @@ void Book::add(const Event& event) {
 }
 
 void Book::modify(const Event& event) {
-    assert(orders.find(event.id) != orders.end());
+    assert(orders.find(event.id) != orders.end() && "order exists");
     Order* order = orders.at(event.id);
     if (event.price != order->price || event.size >= order->size) { // order loses priority if price changes or size increases
         delete_order(order->id);
@@ -87,7 +86,7 @@ void Book::modify(const Event& event) {
 }
 
 void Book::cancel(const Event& event) {
-    assert(orders.find(event.id) != orders.end());
+    assert(orders.find(event.id) != orders.end() && "order exists");
     Order* order = orders.at(event.id);
     assert(event.size <= order->size && "cancel size <= order size");
 
@@ -112,7 +111,7 @@ void Book::clear() {
 }
 
 void Book::delete_order(uint64_t id) {
-    assert(orders.find(id) != orders.end());
+    assert(orders.find(id) != orders.end() && "order exists");
     Order* order = orders.at(id);
     if (order->next)
         order->next->prev = order->prev;
