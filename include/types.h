@@ -13,21 +13,16 @@ struct Event {
     char side;
     double price;
     uint32_t size;
-    uint32_t id;
+    uint64_t id;
 };
 
-struct Order {      // resting order
-    uint64_t time;
-    double price;
-    char side;
-    uint32_t id;
-    uint32_t size;
+struct Order : Event {      // resting order
     Order* next = nullptr;
     Order* prev = nullptr;
     Limit* parent = nullptr;
 };
 
-struct Limit {     // price level
+struct Limit {              // price level
     double price;
     char side;
     uint32_t num;

@@ -35,12 +35,11 @@ const std::map<std::string, std::string> parse_line(const std::string& line, con
 
 Event encode_event(const std::map<std::string, std::string>& row) {
     Event event;
-    event.time = std::stol(row.at("ts_event"));
+    event.time = std::stoull(row.at("ts_event"));
     event.action = row.at("action")[0];
     event.side = row.at("side")[0];
     event.price = std::stod(row.at("price"));
-    event.size = std::stol(row.at("size"));
-    event.id = std::stol(row.at("order_id"));
-
+    event.size = std::stoul(row.at("size"));
+    event.id = std::stoull(row.at("order_id"));
     return event;
 }

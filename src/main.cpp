@@ -20,8 +20,9 @@ int main() {
 
     while(std::getline(csv, line)) {
         std::map<std::string, std::string> row = parse_line(line, header);
+        if (!(row.at("instrument_id") == "4120818"))
+            continue;
         Event event = encode_event(row);
-
         book.apply(event);
     }
 

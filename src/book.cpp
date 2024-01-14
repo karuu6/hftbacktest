@@ -1,4 +1,5 @@
 #include "book.h"
+#include <iostream>
 
 bool Book::apply(const Event& event) {
     switch (event.action) {
@@ -51,7 +52,20 @@ void Book::add(const Event& event) {
             asks.emplace(order->price, limit);
     } else {
         Limit* limit = limits.at(order->price);
-        assert(limit->side == order->side && "order side matches existing limit side");
+        // assert(limit->side == order->side && "order side matches existing limit side");
+        if (limit->side != order->side) {
+            std::cout << 
+                limit->side << 
+                "-" << limit->price <<
+                "-" << limit->num
+            << std::endl << std::endl;
+            std::cout << 
+                order->side << 
+                "-" << order->price <<
+                "-" << order->id
+            << std::endl;
+            assert(2+2 == 5);
+        }
 
         order->parent = limit;
         order->prev = limit->tail;
