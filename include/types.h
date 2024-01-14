@@ -16,7 +16,7 @@ struct Event {
     uint32_t id;
 };
 
-struct Order {
+struct Order {      // resting order
     uint64_t time;
     double price;
     char side;
@@ -27,7 +27,7 @@ struct Order {
     Limit* parent = nullptr;
 };
 
-struct Limit {
+struct Limit {     // price level
     double price;
     char side;
     uint32_t num;

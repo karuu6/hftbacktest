@@ -29,6 +29,9 @@ private:
 
     std::unordered_map<double, Limit*> limits;
     std::unordered_map<uint32_t, Order*> orders;
+
+    void delete_order(uint32_t id);
+
 };
 
 #endif

@@ -66,20 +66,68 @@ void Book::add(const Event& event) {
 }
 
 void Book::modify(const Event& event) {
-    return;
+    Order* order = orders.at(event.id);
+    if (event.price != order->price || event.size >= order->size) { // order loses priority if price changes or size increases
+        delete_order(order->id);
+        add(event);
+    } else {
+        order->parent->size -= order->size - event.size;
+        order->size = event.size;
+        order->time = event.time;
+    }
 }
 
 void Book::cancel(const Event& event) {
-    return;
+    Order* order = orders.at(event.id);
+    assert(event.size <= order->size && "cancel size <= order size");
+
+    if (order->size == event.size)
+        delete_order(order->id);
+    else {
+        order->size -= event.size;
+        order->parent->size -= event.size;
+    }
 }
 
 void Book::clear() {
-    return;
-}
-
-Book::~Book() {
     for (const auto& kv : limits)
         delete kv.second;
     for (const auto& kv : orders)
         delete kv.second;
+    
+    asks.clear();
+    bids.clear();
+    orders.clear();
+    limits.clear();
+}
+
+void Book::delete_order(uint32_t id) {
+    Order* order = orders.at(id);
+    if (order->next)
+        order->next->prev = order->prev;
+    if (order->prev)
+        order->prev->next = order->next;
+    if (order->parent->head == order)
+        order->parent->head = order->next;
+    if (order->parent->tail == order)
+        order->parent->tail = order->prev;
+    
+    order->parent->num -= 1;
+    order->parent->size -= order->size;
+
+    if (order->parent->num == 0) {
+        limits.erase(order->price);
+        if (order->side == 'B')
+            bids.erase(order->price);
+        else
+            asks.erase(order->price);
+        delete order->parent;
+    }
+
+    orders.erase(id);
+    delete order;
+}
+
+Book::~Book() {
+    clear();
 }
