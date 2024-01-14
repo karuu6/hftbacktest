@@ -34,8 +34,28 @@ void Book::add(const Event& event) {
     order->id = event.id;
     order->size = event.size;
 
-    if (limits.find(order->price) == limits.end()) {
-        Limit* limit = new Limit();
+    orders.emplace(order->id, order);
+
+    Limit* limit = nullptr;
+    auto range = limits.equal_range(order->price);
+    for (auto it = range.first; it != range.second; ++it) {
+        if (it->second->side == order->side) {
+            limit = it->second;
+            break;
+        }
+    }
+
+    if (limit) {
+        assert(limit->side == order->side);
+        order->parent = limit;
+        order->prev = limit->tail;
+        limit->tail->next = order;
+        limit->tail = order;
+
+        limit->num += 1;
+        limit->size += order->size;
+    } else {
+        limit = new Limit();
         limit->price = order->price;
         limit->side = order->side;
         limit->num = 1;
@@ -50,36 +70,11 @@ void Book::add(const Event& event) {
             bids.emplace(order->price, limit);
         else
             asks.emplace(order->price, limit);
-    } else {
-        Limit* limit = limits.at(order->price);
-        // assert(limit->side == order->side && "order side matches existing limit side");
-        if (limit->side != order->side) {
-            std::cout << 
-                limit->side << 
-                "-" << limit->price <<
-                "-" << limit->num
-            << std::endl << std::endl;
-            std::cout << 
-                order->side << 
-                "-" << order->price <<
-                "-" << order->id
-            << std::endl;
-            assert(2+2 == 5);
-        }
-
-        order->parent = limit;
-        order->prev = limit->tail;
-        limit->tail->next = order;
-        limit->tail = order;
-
-        limit->num += 1;
-        limit->size += order->size;
     }
-
-    orders.emplace(order->id, order);
 }
 
 void Book::modify(const Event& event) {
+    assert(orders.find(event.id) != orders.end());
     Order* order = orders.at(event.id);
     if (event.price != order->price || event.size >= order->size) { // order loses priority if price changes or size increases
         delete_order(order->id);
@@ -92,6 +87,7 @@ void Book::modify(const Event& event) {
 }
 
 void Book::cancel(const Event& event) {
+    assert(orders.find(event.id) != orders.end());
     Order* order = orders.at(event.id);
     assert(event.size <= order->size && "cancel size <= order size");
 
@@ -115,7 +111,8 @@ void Book::clear() {
     limits.clear();
 }
 
-void Book::delete_order(uint32_t id) {
+void Book::delete_order(uint64_t id) {
+    assert(orders.find(id) != orders.end());
     Order* order = orders.at(id);
     if (order->next)
         order->next->prev = order->prev;
@@ -130,7 +127,13 @@ void Book::delete_order(uint32_t id) {
     order->parent->size -= order->size;
 
     if (order->parent->num == 0) {
-        limits.erase(order->price);
+        auto range = limits.equal_range(order->price);
+        for (auto it = range.first; it != range.second; ++it) {
+            if (it->second == order->parent) {
+                limits.erase(it);
+                break;
+            }
+        }
         if (order->side == 'B')
             bids.erase(order->price);
         else

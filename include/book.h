@@ -4,12 +4,6 @@
 #include <map>
 #include "types.h"
 
-struct BidCmp {
-    bool operator()(const double& lhs, const double& rhs) const {
-        return lhs > rhs;
-    }
-};
-
 class Book {
 public:
     bool apply(const Event& event);
@@ -25,13 +19,12 @@ public:
 
 private:
     std::map<double, Limit*> asks;
-    std::map<double, Limit*, BidCmp> bids;
+    std::map<double, Limit*, std::greater<double>> bids;
 
-    std::unordered_map<double, Limit*> limits;
-    std::unordered_map<uint32_t, Order*> orders;
+    std::unordered_map<uint64_t, Order*> orders;
+    std::unordered_multimap<double, Limit*> limits;
 
-    void delete_order(uint32_t id);
-
+    void delete_order(uint64_t id);
 };
 
 #endif
