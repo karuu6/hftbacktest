@@ -31,4 +31,11 @@ struct Limit {              // price level
     Order* tail = nullptr;
 };
 
+struct Trade {
+    uint64_t time;
+    double price;
+    uint32_t size;
+    char side;
+};
+
 #endif

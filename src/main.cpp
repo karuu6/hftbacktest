@@ -1,30 +1,15 @@
-#include <fstream>
+#include "engine.h"
 #include <iostream>
-#include "csv.h"
-#include "book.h"
+
+class MyCB : public Callbacks {
+    virtual void trade(Trade& info) {
+        std::cout << info.price << std::endl;
+    }
+};
 
 int main() {
-    std::ifstream csv("glbx-mdp3-20240102.mbo.csv");
-
-    if (!csv) {
-        std::cerr << "error opening csv file" << std::endl;
-        return 1;
-    }
-
-    std::string header_line;
-    getline(csv, header_line);
-    auto header = parse_header(header_line);
-
-    Book book;
-    std::string line;
-
-    while(std::getline(csv, line)) {
-        std::map<std::string, std::string> row = parse_line(line, header);
-        if (!(row.at("instrument_id") == "4120818"))
-            continue;
-        Event event = encode_event(row);
-        book.apply(event);
-    }
-
+    MyCB cb;
+    Engine engine(&cb);
+    engine.run("glbx-mdp3-20240102.mbo.csv", "4120818");
     return 0;
 }
