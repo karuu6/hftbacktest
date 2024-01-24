@@ -2,6 +2,9 @@
 #define BOOK_H
 
 #include <map>
+#include <cassert>
+#include <unordered_map>
+
 #include "types.h"
 
 class Book {
